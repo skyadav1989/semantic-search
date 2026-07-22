@@ -1,0 +1,25 @@
+Wall Fan:
+  - Home
+  - Office
+  - Classroom
+  - Shop
+
+Pedestal Fan:
+  - Office
+  - Warehouse
+  - Hall
+  - Living Room
+
+Ceiling Fan:
+  - Bedroom
+  - Living Room
+  - Dining Room
+
+LED Bulb:
+  - Bedroom
+  - Kitchen
+  - Office
+
+Switch:
+  - Home
+  - Commercial

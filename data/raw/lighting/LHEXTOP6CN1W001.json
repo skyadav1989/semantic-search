@@ -1,0 +1,64 @@
+{
+  "url": "https://havells.com/lighting/lts-sleekbeam-neo-p.html",
+  "product_id": "275915",
+  "title": "LTS Sleekbeam NEO P 300 mm 1 W",
+  "subtitle": "PC Cabinet Light",
+  "category": "Lighting > Portable Lighting",
+  "sku": "LHEXTOP6CN1W001",
+  "stock_status": "In stock",
+  "stock_warning": "",
+  "price": "₹ 410.00",
+  "old_price": "₹ 651",
+  "discount": "",
+  "price_amount": "410.00",
+  "price_currency": "INR",
+  "key_features": [
+    "PIR Sensor",
+    "Type C Charging",
+    "PC Material",
+    "Magnetic installation",
+    "ON -> PIR Sensor -> OFF",
+    "Warranty : 6 Months"
+  ],
+  "variations": [
+    {
+      "name": "Wattage",
+      "options": [
+        "1 W",
+        "1.5 W"
+      ]
+    }
+  ],
+  "installation": {},
+  "warranty_options": [],
+  "offers": [],
+  "total_price": "",
+  "description": "PIR Sensor, Type C Charging, PC Material, Magnetic installation, ON -&gt; PIR Sensor -&gt; OFF, Warranty : 6 Months",
+  "specifications": {},
+  "technical_specifications": {
+    "Manufactured By": "Havells India Ltd.",
+    "Country Of Origin": "India",
+    "Suitable For": "Reading, Power Outages Situtation, Gifting",
+    "Wattage (W)": "1 W",
+    "Net Weight": "0.060 kg",
+    "Packaging Dimensions": "33.0 cm x 16.0 cm x 17.0 cm",
+    "Warranty": "6 Months",
+    "Applications": "Wardrobes, Bookshelves, Kitchen cabinets, Stairs, Step light, Bedside light",
+    "Master Box Weight": "0.060 kg",
+    "Net Contents": "1 N Main Unit",
+    "Bulb Technology": "LED",
+    "Dimmable": "Non Dimmable",
+    "Material": "PC Body",
+    "Body Colour": "White",
+    "Product Weight": "0.06 kg",
+    "Colour Rendering Index (CRI)": "≥ 80",
+    "Start Up Time": "< 2 Sec",
+    "Diffuser": "PC",
+    "Charging Method Provision": "Charging Via USB Type C",
+    "Back Up Duration": "Runtime upto 3 hours (always ON mode)",
+    "Battery Type Capacity": "3.7 V, 200 mAh*2"
+  },
+  "images": [
+    "https://havells.com/media/catalog/product/cache/a68cd95282f629852e6b9e296b7a5618/1/_/1_w_main_1_.jpg"
+  ]
+}

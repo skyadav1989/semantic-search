@@ -1,0 +1,10 @@
+version: 1.0.0
+files:
+  taxonomy: taxonomy.yaml
+  synonyms: synonyms.yaml
+  use_cases: use_cases.yaml
+  feature_benefits: feature_benefits.yaml
+  technical_specs: technical_specs.yaml
+  colors: colors.yaml
+  product_types: product_types.yaml
+  stopwords: stopwords.yaml

@@ -1,0 +1,29 @@
+version: 1.0
+
+Fans:
+  Ceiling Fans:
+    family: Ceiling Fan
+    department: Fans
+    product_type: Ceiling Fan
+  Wall Fans:
+    family: Wall Fan
+    department: Fans
+    product_type: Wall Fan
+  Pedestal Fans:
+    family: Pedestal Fan
+    department: Fans
+    product_type: Pedestal Fan
+  Exhaust Fans:
+    family: Exhaust Fan
+    department: Fans
+    product_type: Exhaust Fan
+
+Lighting:
+  LED Bulbs:
+    family: LED Bulb
+    department: Lighting
+    product_type: Bulb
+  Downlights:
+    family: Downlight
+    department: Lighting
+    product_type: Downlight

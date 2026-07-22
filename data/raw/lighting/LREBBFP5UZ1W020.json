@@ -1,0 +1,63 @@
+{
+  "url": "https://havells.com/lighting/blaze-led-rd.html",
+  "product_id": "278164",
+  "title": "Blaze LED 20 W",
+  "subtitle": "Warm White RD Panel",
+  "category": "Lighting > Ceiling Lights",
+  "sku": "LREBBFP5UZ1W020",
+  "stock_status": "In stock",
+  "stock_warning": "",
+  "price": "₹ 703.00",
+  "old_price": "₹ 1 235",
+  "discount": "",
+  "price_amount": "215.00",
+  "price_currency": "INR",
+  "key_features": [
+    "Ultra bright compact recess panel",
+    "3 kV surge protection and 380 V high voltage protection",
+    "Long life of 25000 burning hours",
+    "Light weight polycarbonate housing"
+  ],
+  "variations": [
+    {
+      "name": "Wattage",
+      "options": [
+        "5 W",
+        "10 W",
+        "15 W",
+        "20 W"
+      ]
+    },
+    {
+      "name": "Color Temp",
+      "options": [
+        "Warm White",
+        "Cool Daylight",
+        "Natural Daylight"
+      ]
+    }
+  ],
+  "installation": {},
+  "warranty_options": [],
+  "offers": [],
+  "total_price": "",
+  "description": "Ultra bright compact recess panel, 3 kV surge protection and 380 V high voltage protection, Long life of 25000 burning hours, Light weight polycarbonate housing",
+  "specifications": {
+    "Wattage": "20 W",
+    "Color Temperature": "Cool Daylight"
+  },
+  "technical_specifications": {
+    "Manufactured By": "Havells India Ltd.",
+    "Country Of Origin": "India",
+    "Suitable For": "For residential & domestical application",
+    "Wattage (W)": "20 W",
+    "Cut out Dimensions": "19.8 cm",
+    "Rated Lumens": "1600 lm",
+    "Rated Input Voltage": "220 V - 240 V AC",
+    "Height": "32 mm",
+    "Power Consumption": "20 W"
+  },
+  "images": [
+    "https://havells.com/media/catalog/product/cache/a68cd95282f629852e6b9e296b7a5618/b/l/blaze_recess_rd_1__9.jpg"
+  ]
+}

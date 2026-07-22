@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Semantic Engine — AI Product Search</title>
+  <meta name="description" content="AI-Powered Semantic Product Search with Vector Retrieval & Re-ranking">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <!-- Top Navbar Header -->
+  <header>
+    <div class="container header-wrapper">
+      <div class="logo-group">
+        <div class="logo-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+        </div>
+        <div class="logo-text">
+          <h1>SemanticEngine</h1>
+          <span>Vector Product Intelligence</span>
+        </div>
+      </div>
+      
+      <div class="api-badge">
+        <span class="pulse-dot"></span>
+        API Online
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero & Search Box Bar -->
+  <main class="container">
+    <section class="hero-section">
+      <h2 class="hero-title">Smart Semantic Product Search</h2>
+      <p class="hero-subtitle">Enter natural query, constraints, or feature intent (e.g. price limits, features, categories)</p>
+
+      <div class="search-box-container">
+        <form id="search-form" onsubmit="event.preventDefault(); performSearch();">
+          <div class="search-input-wrapper">
+            <svg class="search-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+
+            <input 
+              type="text" 
+              id="search-input" 
+              class="search-input" 
+              placeholder="Try 'ceiling fans below 5000' or 'high speed BLDC fan'..." 
+              value="ceiling fans below 5000"
+              autocomplete="off"
+            />
+
+            <button type="button" id="clear-btn" class="clear-btn" style="display: none;" onclick="clearSearch()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+
+            <button type="submit" class="search-btn">
+              <span>Search</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </button>
+          </div>
+        </form>
+
+        <div class="preset-chips">
+          <span class="preset-chip-label">Quick Queries:</span>
+          <button class="chip-btn" onclick="setQuery('ceiling fans below 5000')">ceiling fans below 5000</button>
+          <button class="chip-btn" onclick="setQuery('high speed BLDC ceiling fan')">high speed BLDC ceiling fan</button>
+          <button class="chip-btn" onclick="setQuery('underlight fan')">underlight fan</button>
+          <button class="chip-btn" onclick="setQuery('decorative fan under 4000')">decorative fan under 4000</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Query Insights Panel -->
+    <section id="insights-panel" class="insights-panel">
+      <div class="insights-header">
+        <div class="insights-title">
+          <span>Query Insights</span>
+          <span id="intent-badge" class="intent-badge">INTENT</span>
+        </div>
+        <div class="insights-stats">
+          <div class="stat-item">
+            <span>Results:</span>
+            <strong id="count-stat">0</strong>
+          </div>
+          <div id="latency-badge" class="latency-badge">
+            ⚡ 0 ms
+          </div>
+        </div>
+      </div>
+
+      <div class="insights-details">
+        <div class="detail-column">
+          <div class="detail-label">Extracted Filters</div>
+          <div id="filters-container" class="tag-cloud">
+            <span class="tag-pill">None</span>
+          </div>
+        </div>
+
+        <div class="detail-column">
+          <div class="detail-label">Expanded Terms</div>
+          <div id="terms-container" class="tag-cloud">
+            <span class="tag-pill">None</span>
+          </div>
+        </div>
+
+        <div class="detail-column">
+          <div class="detail-label">Normalized Query</div>
+          <div id="normalized-query" style="font-size:0.88rem; color: var(--text-main); font-weight: 500;">
+            -
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Product Grid Section -->
+    <section>
+      <div id="products-grid" class="products-grid">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

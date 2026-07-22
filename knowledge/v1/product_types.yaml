@@ -1,0 +1,12 @@
+Wall Fan:
+  mount: Wall
+  airflow: High
+  mobility: Fixed
+
+Pedestal Fan:
+  mount: Floor
+  mobility: Portable
+
+Ceiling Fan:
+  mount: Ceiling
+  mobility: Fixed
