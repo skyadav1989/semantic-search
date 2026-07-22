@@ -7,6 +7,20 @@ from app.catalog.loader import CatalogLoader
 from app.cli.progress import ProgressReporter
 from app.intelligence.models import EnrichedProduct
 
+COLOR_MAP = {
+    "espresso brown": "brown",
+    "brown": "brown",
+    "quartz": "white",
+    "pearl white": "white",
+    "white": "white",
+    "ivory": "white",
+    "indigo blue": "blue",
+    "blue": "blue",
+    "grey": "gray",
+    "graphite": "gray",
+    "black": "black",
+}
+
 def try_import_pipeline(args):
     """
     Initialize indexing pipeline directly.
@@ -96,6 +110,15 @@ def parse_price(value):
         return float(value)
     except ValueError:
         return 0.0
+
+def extract_color(raw):
+    for variation in raw.get("variations", []):
+        if variation.get("name", "").lower() == "colour":
+            options = variation.get("options", [])
+            if options:
+                return options[0].lower()
+
+    return ""
 
 
 def main():
@@ -198,6 +221,7 @@ def main():
                     "title": product.title,
                     "category": product.category,
                     "subcategory": product.subcategory,
+                    "color": extract_color(product.raw),
 
                     # Price
                     "price": parse_price(product.raw.get("price_amount")),
