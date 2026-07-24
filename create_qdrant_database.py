@@ -9,7 +9,7 @@ from app.embedding.qdrant_manager import QdrantCollectionManager
 client = QdrantClient("http://localhost:6333")
 
 
-#client.delete_collection("products")
+client.delete_collection("products")
 
 
 #print(client.get_collections())

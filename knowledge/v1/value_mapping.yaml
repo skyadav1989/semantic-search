@@ -1,0 +1,9 @@
+color:
+  brown: [espresso brown, coffee brown, walnut, teak, brown]
+  white: [pearl white, quartz, ivory, white]
+  blue: [indigo blue, blue]
+  gray: [graphite, grey, gray, silver grey]
+  black: [black]
+boolean:
+  true: [yes, supported, available, true]
+  false: [no, not supported, unavailable, false, non dimmable]

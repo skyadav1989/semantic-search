@@ -1,0 +1,17 @@
+ranking:
+
+  semantic_weight: 0.60
+
+  rerank_weight: 0.25
+
+  business_weight: 0.15
+
+boosts:
+
+  in_stock: 1.0
+
+  star_rating: 0.2
+
+penalties:
+
+  out_of_stock: -1.0

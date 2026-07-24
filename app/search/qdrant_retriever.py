@@ -31,6 +31,25 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
+#
+# Default payload returned from Qdrant
+# Keep this as small as possible.
+#
+DEFAULT_PAYLOAD = [
+    "sku",
+    "title",
+    "category",
+    "subcategory",
+    "brand",
+    "price",
+    "mrp",
+    "image",
+    "url",
+    "stock_status",
+    "attributes",
+]
+
+
 class QdrantRetriever:
     """
     Semantic vector retriever.
@@ -52,7 +71,7 @@ class QdrantRetriever:
         *,
         limit: int = 20,
         metadata_filter: Filter | None = None,
-        with_payload: bool = True,
+        include_search_document: bool = False,
     ) -> list[dict]:
         """
         Search vectors in Qdrant.
@@ -61,75 +80,22 @@ class QdrantRetriever:
         if not vector:
             return []
 
-        logger.info(
-            "Searching collection '%s'",
-            self.collection_name,
-        )
+        #
+        # Payload selection
+        #
 
-        try:
+        payload = list(DEFAULT_PAYLOAD)
 
-            #
-            # qdrant-client >=1.8
-            #
-            response = self.client.query_points(
-                collection_name=self.collection_name,
-                query=vector,
-                query_filter=metadata_filter,
-                limit=limit,
-                with_payload=with_payload,
-                with_vectors=False,
+        if include_search_document:
+            payload.extend(
+                [
+                    "search_document",
+                    "technical_document",
+                    "keywords",
+                    "benefits",
+                    "use_cases",
+                ]
             )
-
-            hits = response.points
-
-        except AttributeError:
-
-            #
-            # Older qdrant-client
-            #
-            hits = self.client.search(
-                collection_name=self.collection_name,
-                query_vector=vector,
-                query_filter=metadata_filter,
-                limit=limit,
-                with_payload=with_payload,
-                with_vectors=False,
-            )
-
-        results = []
-
-        for hit in hits:
-
-            payload = getattr(hit, "payload", {}) or {}
-
-            results.append(
-                {
-                    "id": str(hit.id),
-                    "score": float(hit.score),
-                    **payload,
-                }
-            )
-
-        logger.info(
-            "Retrieved %d candidates",
-            len(results),
-        )
-
-        return results
-
-    # ---------------------------------------------------------
-
-    def retrieve(
-        self,
-        vector: list[float],
-        *,
-        limit: int = 20,
-        metadata_filter: Filter | None = None,
-        with_payload: bool = True,
-    ) -> list[dict]:
-
-        if not vector:
-            return []
 
         logger.info(
             "Searching collection '%s'",
@@ -143,7 +109,7 @@ class QdrantRetriever:
                 query=vector,
                 query_filter=metadata_filter,
                 limit=limit,
-                with_payload=with_payload,
+                with_payload=payload,
                 with_vectors=False,
             )
 
@@ -156,7 +122,7 @@ class QdrantRetriever:
                 query_vector=vector,
                 query_filter=metadata_filter,
                 limit=limit,
-                with_payload=with_payload,
+                with_payload=payload,
                 with_vectors=False,
             )
 
@@ -164,13 +130,13 @@ class QdrantRetriever:
 
         for hit in hits:
 
-            payload = getattr(hit, "payload", {}) or {}
+            hit_payload = getattr(hit, "payload", {}) or {}
 
             results.append(
                 {
                     "id": str(hit.id),
                     "score": float(hit.score),
-                    "payload": payload,
+                    "payload": hit_payload,
                 }
             )
 

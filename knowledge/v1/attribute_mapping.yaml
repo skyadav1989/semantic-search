@@ -1,0 +1,76 @@
+canonical_attributes:
+  color:
+    - color
+    - colour
+    - body color
+    - body colour
+    - finish
+    - shade
+  power:
+    - wattage
+    - rated power
+    - power
+    - power consumption
+  capacity:
+    - capacity
+    - storage capacity
+    - water capacity
+  size:
+    - sweep size
+    - diameter
+    - size
+    - length
+    - width
+    - height
+  warranty:
+    - warranty
+    - guarantee
+  blade_count:
+    - no. of blades
+    - blades
+  air_delivery:
+    - air delivery
+  rpm:
+    - rated speed
+    - speed
+    - rpm
+  motor_type:
+    - motor type
+  star_rating:
+    - star rating
+  noise_level:
+    - noise level
+  voltage:
+    - rated voltage
+    - voltage
+  frequency:
+    - rated frequency
+    - frequency
+  current:
+    - rated current
+    - current
+  weight:
+    - weight
+    - net weight
+  material:
+    - material
+    - body material
+  cri:
+    - cri
+    - colour rendering index
+  dimmable:
+    - dimmable
+  beam_angle:
+    - beam angle
+  color_temperature:
+    - color temperature
+    - colour temperature
+  ip_rating:
+    - ip rating
+  remote:
+    - remote
+    - remote control
+  bluetooth:
+    - bluetooth
+  wifi:
+    - wifi

@@ -173,7 +173,7 @@ function renderResults(results) {
            <img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(title)}" class="product-image-img" loading="lazy" referrerpolicy="no-referrer" onerror="handleImageError(this)" />
          </div>`
       : `<div class="card-image-placeholder">
-           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
            </svg>
          </div>`;
@@ -185,7 +185,7 @@ function renderResults(results) {
 
     return `
       <div class="product-card">
-        <div class="card-top">
+        <div class="card-image-header">
           ${imageHtml}
           <div class="card-badges">
             <span class="stock-tag">${stockStatus}</span>
@@ -264,6 +264,6 @@ function handleImageError(imgElem) {
   const wrapper = imgElem.closest('.product-image-wrapper');
   if (wrapper) {
     wrapper.className = 'card-image-placeholder';
-    wrapper.innerHTML = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`;
+    wrapper.innerHTML = `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`;
   }
 }

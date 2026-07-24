@@ -1,0 +1,4 @@
+patterns:
+  below: {attribute: max_price}
+  under: {attribute: max_price}
+  above: {attribute: min_price}

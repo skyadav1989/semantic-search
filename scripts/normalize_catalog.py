@@ -1,3 +1,7 @@
+from fastapi import datastructures
+from fastapi import datastructures
+from app.intelligence import attribute_extractor
+from app.intelligence import attribute_extractor
 import argparse
 import json
 import re
@@ -24,6 +28,8 @@ class CatalogNormalizer:
         files = list(self.input_dir.rglob("*.json"))
 
         print(f"\nFound {len(files)} product files\n")
+
+        #files = files[:1]
 
         for file in files:
             self.total += 1
@@ -79,11 +85,17 @@ class CatalogNormalizer:
         subcategory = self.extract_subcategory(p.get("category", ""))
 
         attrs = self.normalize_attributes(
-            p.get("technical_specifications", {})
+            p.get("technical_specifications", {}),
+            p.get("variations", []),
         )
+
+   
 
         return {
 
+            #
+            # Identity
+            #
             "sku": p.get("sku"),
 
             "title": p.get("title"),
@@ -92,35 +104,69 @@ class CatalogNormalizer:
 
             "subcategory": subcategory,
 
+            #
+            # Description
+            #
             "description": self.clean_html(
                 p.get("description", "")
             ),
 
-            "price": self.parse_price(
-                p.get("price_amount")
+
+            
+            "key_features": p.get(
+                "key_features",
+                [],
+            ),
+            #
+            # Pricing
+            #
+            "price": self.get_price(p),
+
+            "mrp": self.get_mrp(p),
+
+            "currency": self.get_currency(p),
+
+            #
+            # Brand
+            #
+            "brand": p.get("brand", ""),
+
+            #
+            # Inventory
+            #
+            "stock_status": p.get(
+                "stock_status",
+                ""
             ),
 
-            "currency": p.get(
-                "price_currency",
-                "INR"
-            ),
-
+            #
+            # Attributes
+            #
             "attributes": attrs,
 
+            #
+            # Search
+            #
             "search_document": self.build_search_document(
                 p,
-                attrs
+                attrs,
             ),
 
+            #
+            # Images
+            #
             "images": p.get(
                 "images",
-                []
+                [],
             ),
 
+            #
+            # URL
+            #
             "url": p.get(
-                "url"
-            )
-
+                "url",
+                "",
+            ),
         }
 
     # -----------------------------------------------------
@@ -136,8 +182,14 @@ class CatalogNormalizer:
 
     def extract_subcategory(self, category: str):
 
-        if ">" in category:
-            return category.split(">")[1].strip()
+        parts = [
+            x.strip()
+            for x in category.split(">")
+            if x.strip()
+        ]
+
+        if len(parts) >= 2:
+            return parts[-1]
 
         return ""
 
@@ -155,21 +207,103 @@ class CatalogNormalizer:
 
         price = str(price)
 
-        price = price.replace(",", "")
-
-        price = price.replace("₹", "")
-
-        price = price.strip()
+        # Keep only digits and decimal point
+        price = re.sub(r"[^\d.]", "", price)
 
         if not price:
             return None
 
         try:
             return float(price)
-
-        except:
+        except ValueError:
             return None
 
+    # -----------------------------------------------------
+# Generic Price Helpers
+# -----------------------------------------------------
+
+    def get_price(self, p):
+
+        fields = [
+
+            "price",
+
+            "price_amount",
+
+            "selling_price",
+
+            "special_price",
+
+            "final_price",
+
+        ]
+
+        for field in fields:
+
+            value = p.get(field)
+
+            if value not in (None, "", 0):
+
+                price = self.parse_price(value)
+
+                if price is not None:
+
+                    return price
+
+        return None
+
+
+    def get_mrp(self, p):
+
+        fields = [
+
+            "old_price",
+
+            "mrp",
+
+            "old_price_amount",
+
+            "regular_price",
+
+            "list_price",
+
+            "original_price",
+
+        ]
+
+        for field in fields:
+
+            value = p.get(field)
+
+
+            if value not in (None, "", 0):
+                #print(field,value)
+
+                price = self.parse_price(value)
+                #print("parsed : "+price)
+
+                if price is not None:
+
+                    return price
+
+        #
+        # MRP unavailable
+        #
+
+        return None
+
+    def get_currency(self, p):
+
+        return (
+
+            p.get("currency")
+
+            or p.get("price_currency")
+
+            or "INR"
+
+        )
+    
     # -----------------------------------------------------
     # HTML
     # -----------------------------------------------------
@@ -189,10 +323,13 @@ class CatalogNormalizer:
     # Attributes
     # -----------------------------------------------------
 
-    def normalize_attributes(self, specs):
+    def normalize_attributes(self, specs, variations):
 
         attrs = {}
 
+        #
+        # Technical Specifications
+        #
         for key, value in specs.items():
 
             if value is None:
@@ -206,8 +343,37 @@ class CatalogNormalizer:
 
             attrs[key_norm] = value
 
-        return attrs
+        #
+        # Variations
+        #
+        for variation in variations:
 
+            name = variation.get("name", "").strip()
+
+            if not name:
+                continue
+
+            key = (
+                name.lower()
+                .replace(" ", "_")
+                .replace("-", "_")
+            )
+
+            options = variation.get("options", [])
+
+            if not options:
+                continue
+
+            #
+            # Store as comma separated string
+            #
+            attrs[key] = ", ".join(
+                str(option).strip()
+                for option in options
+                if option
+            )
+
+        return attrs
     # -----------------------------------------------------
     # Search Document
     # -----------------------------------------------------
@@ -222,21 +388,42 @@ class CatalogNormalizer:
 
         text.append(p.get("category", ""))
 
-        text.append(self.clean_html(
-            p.get("description", "")
-        ))
-
-        text.extend(
-            p.get("key_features", [])
+        text.append(
+            self.clean_html(
+                p.get("description", "")
+            )
         )
 
-        for k, v in attrs.items():
-            text.append(f"{k} {v}")
+       
+        for feature in p.get("key_features", []):
+            text.append(feature)
+
+        #
+        # Price
+        #
+
+        price = self.get_price(p)
+
+        mrp = self.get_mrp(p)
+
+        if price is not None:
+            text.append(f"Selling Price ₹{price:.0f}")
+
+        if mrp is not None:
+            text.append(f"MRP ₹{mrp:.0f}")
+
+
+        #
+        # Attributes
+        #
+        for key, value in attrs.items():
+
+            if value:
+                text.append(f"{key} {value}")
 
         return "\n".join(
             x for x in text if x
         )
-
 
 # -----------------------------------------------------
 # CLI

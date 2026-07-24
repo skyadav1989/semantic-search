@@ -1,9 +1,7 @@
-- and
-- with
-- the
-- of
-- in
-- for
-- this
-- package
-- contains
+stopwords:
+  - buy
+  - best
+  - latest
+  - cheap
+  - online
+  - product

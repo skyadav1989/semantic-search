@@ -1,0 +1,10 @@
+units:
+  power: W
+  voltage: V
+  current: A
+  frequency: Hz
+  size: mm
+  capacity: L
+  air_delivery: m3/min
+  rpm: RPM
+  weight: kg

@@ -1,3 +1,4 @@
+from sympy.sets import conditionset
 try:
     from qdrant_client.http.models import (
         Filter,
@@ -30,6 +31,21 @@ class MetadataFilterBuilder:
                         "value": attributes["category"]
                     }
                 })
+            
+            #
+            # Subcategory
+            #
+            if "subcategory" in attributes:
+                conditions.append(
+                    FieldCondition(
+                        key="subcategory",
+                        match=MatchValue(
+                            value=attributes["subcategory"]
+                        ),
+                    )
+                )
+
+            
 
             if "color" in attributes:
                 conditions.append({
@@ -94,10 +110,28 @@ class MetadataFilterBuilder:
                 )
             )
 
-        #
         # Price
         #
-        if "price" in attributes:
+
+        #
+        # QueryProcessor format
+        #
+        if "max_price" in attributes or "min_price" in attributes:
+
+            conditions.append(
+                FieldCondition(
+                    key="price",
+                    range=Range(
+                        gte=attributes.get("min_price"),
+                        lte=attributes.get("max_price"),
+                    ),
+                )
+            )
+
+        #
+        # Backward compatibility
+        #
+        elif "price" in attributes:
 
             price = attributes["price"]
 

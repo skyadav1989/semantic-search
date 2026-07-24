@@ -1,27 +1,85 @@
-from typing import Dict, List
+"""
+Query Expander
+
+Expands search queries using the Knowledge Registry.
+
+Example
+
+Query:
+    ceiling fan
+
+Expanded:
+    ceiling fan electric fan
+
+Synonyms come from:
+
+knowledge/v1/synonyms.yaml
+"""
+
+from __future__ import annotations
+
 
 class QueryExpander:
-    """
-    Expands a query using a synonym dictionary.
-    """
 
-    def __init__(self, synonyms: Dict[str, List[str]] | None = None):
-        self.synonyms = synonyms or {
-            "fan": ["ceiling fan", "wall fan", "pedestal fan"],
-            "bulb": ["led bulb", "lamp"],
-            "ac": ["air conditioner"]
-        }
+    def __init__(self, registry):
 
-    def expand(self, query: str) -> dict:
+        self.registry = registry
+
+        self.synonyms = registry.synonyms.get(
+            "synonyms",
+            {}
+        )
+
+    # ---------------------------------------------------------
+
+    def expand(
+        self,
+        query: str,
+    ) -> dict:
+
         words = query.lower().split()
-        expanded = set(words)
+
+        expanded = []
+
+        seen = set()
 
         for word in words:
-            if word in self.synonyms:
-                expanded.update(self.synonyms[word])
+
+            #
+            # Original word
+            #
+
+            if word not in seen:
+                expanded.append(word)
+                seen.add(word)
+
+            #
+            # Synonyms
+            #
+
+            values = self.synonyms.get(
+                word,
+                []
+            )
+
+            for synonym in values:
+
+                synonym = synonym.lower()
+
+                if synonym not in seen:
+
+                    expanded.append(
+                        synonym
+                    )
+
+                    seen.add(
+                        synonym
+                    )
 
         return {
-            "original_query": query,
-            "expanded_terms": sorted(expanded),
-            "expanded_query": " ".join(sorted(expanded))
+
+            "expanded_query": " ".join(expanded),
+
+            "expanded_terms": expanded,
+
         }

@@ -1,32 +1,20 @@
-from app.bootstrap import engine
 import argparse
 import re
 from pathlib import Path
 
 from app.catalog.loader import CatalogLoader
 from app.cli.progress import ProgressReporter
+from app.intelligence.attribute_extractor import AttributeExtractor
 from app.intelligence.models import EnrichedProduct
 
-COLOR_MAP = {
-    "espresso brown": "brown",
-    "brown": "brown",
-    "quartz": "white",
-    "pearl white": "white",
-    "white": "white",
-    "ivory": "white",
-    "indigo blue": "blue",
-    "blue": "blue",
-    "grey": "gray",
-    "graphite": "gray",
-    "black": "black",
-}
 
 def try_import_pipeline(args):
     """
-    Initialize indexing pipeline directly.
+    Initialize indexing pipeline.
     """
 
     engine = {
+        "registry": None,
         "intelligence": None,
         "embedding": None,
         "writer": None,
@@ -40,6 +28,8 @@ def try_import_pipeline(args):
 
         registry = KnowledgeRegistry(args.knowledge)
 
+        engine["registry"] = registry
+
         #
         # Intelligence
         #
@@ -47,9 +37,7 @@ def try_import_pipeline(args):
             ProductIntelligencePipeline,
         )
 
-        engine["intelligence"] = ProductIntelligencePipeline(
-            registry
-        )
+        engine["intelligence"] = ProductIntelligencePipeline(registry)
 
         #
         # Embedder
@@ -64,11 +52,10 @@ def try_import_pipeline(args):
         # Vector Writer
         #
         from qdrant_client import QdrantClient
+
         from app.embedding.vector_writer import VectorWriter
 
-        client = QdrantClient(
-            url="http://localhost:6333"
-        )
+        client = QdrantClient(url="http://localhost:6333")
 
         engine["writer"] = VectorWriter(
             client=client,
@@ -82,13 +69,15 @@ def try_import_pipeline(args):
 
     return engine
 
+
 def parse_price(value):
     """
     Convert:
+
         ₹ 16 060
         ₹ 4 800.00
         4800
-        None
+
     into float.
     """
 
@@ -100,7 +89,6 @@ def parse_price(value):
 
     value = str(value)
 
-    # Keep only digits and decimal point
     value = re.sub(r"[^\d.]", "", value)
 
     if not value:
@@ -111,18 +99,8 @@ def parse_price(value):
     except ValueError:
         return 0.0
 
-def extract_color(raw):
-    for variation in raw.get("variations", []):
-        if variation.get("name", "").lower() == "colour":
-            options = variation.get("options", [])
-            if options:
-                return options[0].lower()
-
-    return ""
-
 
 def main():
-
     parser = argparse.ArgumentParser(
         description="Semantic Engine Catalog Indexer"
     )
@@ -149,12 +127,19 @@ def main():
 
     loader = CatalogLoader(input_path)
 
+    #
+    # Initialize pipeline
+    #
     engine = try_import_pipeline(args)
+
+    #
+    # Generic Attribute Extractor
+    #
+    attribute_extractor = AttributeExtractor(engine["registry"])
 
     total = 0
 
     for product in loader:
-
         total += 1
 
         reporter.tick()
@@ -163,10 +148,8 @@ def main():
             continue
 
         #
-        # Intelligence
+        # Intelligence Model
         #
-
-
         enriched = EnrichedProduct(
             sku=product.sku,
             title=product.title,
@@ -175,82 +158,75 @@ def main():
             raw=product.raw,
         )
 
+
+        #print(f" search_document length : {len(enriched.search_document)}")
+        #print(f" technical_document length : {len(enriched.technical_document)}")
+        
+
         if engine["intelligence"]:
-
             try:
-                enriched = engine["intelligence"].process(
-                    enriched
-                )
+                enriched = engine["intelligence"].process(enriched)
             except Exception as e:
-
                 print(f"[INTELLIGENCE] {product.sku}: {e}")
-
                 continue
-            
+
+        #
+        # Generic Attribute Extraction
+        #
+        attributes = attribute_extractor.extract(product.raw)
 
         #
         # Embedding
         #
 
+
         bundle = enriched
 
         if engine["embedding"]:
-
             try:
-
-                bundle = engine["embedding"].encode(
-                    enriched.search_document
-                )
-
+                bundle = engine["embedding"].encode(enriched.search_document)
             except Exception as e:
-
                 print(f"[EMBEDDING] {product.sku}: {e}")
-
                 continue
 
         #
         # Index
         #
-
         if engine["writer"]:
-
             try:
-
                 payload = {
                     "sku": product.sku,
                     "title": product.title,
                     "category": product.category,
                     "subcategory": product.subcategory,
-                    "color": extract_color(product.raw),
 
-                    # Price
-                    "price": parse_price(product.raw.get("price_amount")),
-                    "mrp": parse_price(product.raw.get("old_price")),
+                    "price": product.raw.get("price", 0.0),
+                    "mrp": product.raw.get("mrp", 0.0),
+                    "currency": product.raw.get("currency", "INR"),
 
-                    # Inventory
+                    "brand": product.raw.get("brand", ""),
                     "stock_status": product.raw.get("stock_status", ""),
 
-                    # Brand
-                    "brand": product.raw.get("brand", ""),
+                    "description": product.raw.get("description", ""),
+                    "key_features": product.raw.get("key_features", []),
 
-                    # Product URL
                     "url": product.raw.get("url", ""),
-
-                    # Primary Image
                     "image": (
-                        product.raw.get("images", [None])[0]
+                        product.raw.get("images", [""])[0]
                         if product.raw.get("images")
                         else ""
                     ),
 
-                    # Search fields
                     "keywords": enriched.keywords,
                     "benefits": enriched.benefits,
                     "use_cases": enriched.use_cases,
-
                     "search_document": enriched.search_document,
                     "technical_document": enriched.technical_document,
-                }
+
+                    "attributes": attributes,
+
+                    **attributes,
+            }
 
                 engine["writer"].write(
                     [
@@ -263,9 +239,7 @@ def main():
                 )
 
             except Exception as e:
-
                 print(f"[INDEX] {product.sku}: {e}")
-
                 continue
 
     reporter.finish()

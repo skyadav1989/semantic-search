@@ -1,45 +1,128 @@
-from typing import List
+"""
+Business Ranker
+
+Applies business scoring after AI reranking.
+
+All weights come from
+
+knowledge/v1/ranking_rules.yaml
+"""
+
+from __future__ import annotations
+
 
 class BusinessRanker:
-    """
-    Applies business-specific boosts to search results.
-    """
 
-    def __init__(
-        self,
-        bestseller_boost=0.10,
-        in_stock_boost=0.05,
-        rating_weight=0.02,
-        new_arrival_boost=0.03,
-    ):
-        self.bestseller_boost = bestseller_boost
-        self.in_stock_boost = in_stock_boost
-        self.rating_weight = rating_weight
-        self.new_arrival_boost = new_arrival_boost
+    def __init__(self, registry):
 
-    def score(self, product: dict) -> float:
-        score = product.get("rerank_score", product.get("score", 0.0))
+        self.registry = registry
 
-        if product.get("is_bestseller"):
-            score += self.bestseller_boost
+        ranking = registry.ranking_rules.get(
+            "ranking",
+            {}
+        )
 
-        if product.get("in_stock"):
-            score += self.in_stock_boost
+        self.semantic_weight = ranking.get(
+            "semantic_weight",
+            0.60,
+        )
 
-        if product.get("is_new_arrival"):
-            score += self.new_arrival_boost
+        self.rerank_weight = ranking.get(
+            "rerank_weight",
+            0.25,
+        )
 
-        rating = float(product.get("rating", 0))
-        score += rating * self.rating_weight
+        self.business_weight = ranking.get(
+            "business_weight",
+            0.15,
+        )
 
-        return score
+    # ---------------------------------------------------------
 
-    def rank(self, products: List[dict]) -> List[dict]:
-        for product in products:
-            product["business_score"] = self.score(product)
+    def rank(self, candidates):
+
+        if not candidates:
+            return []
+
+        results = []
+
+        for item in candidates:
+
+            semantic = float(
+                item.get(
+                    "score",
+                    0.0,
+                )
+            )
+
+            rerank = float(
+                item.get(
+                    "rerank_score",
+                    semantic,
+                )
+            )
+
+            #
+            # Business Boost
+            #
+
+            business = 0.0
+
+            #
+            # In stock
+            #
+
+            if item.get("stock_status") == "In stock":
+                business += 1.0
+
+            #
+            # Rating
+            #
+
+            if item.get("star_rating"):
+
+                try:
+
+                    business += (
+                        float(
+                            item["star_rating"]
+                        )
+                        / 5
+                    )
+
+                except Exception:
+                    pass
+
+            #
+            # Final Score
+            #
+
+            final = (
+
+                semantic
+                * self.semantic_weight
+
+                +
+
+                rerank
+                * self.rerank_weight
+
+                +
+
+                business
+                * self.business_weight
+
+            )
+
+            item["business_score"] = round(
+                final,
+                5,
+            )
+
+            results.append(item)
 
         return sorted(
-            products,
-            key=lambda p: p["business_score"],
-            reverse=True
+            results,
+            key=lambda x: x["business_score"],
+            reverse=True,
         )

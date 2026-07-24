@@ -1,0 +1,4 @@
+feature_groups:
+  Fans: [power, size, air_delivery, blade_count, rpm]
+  Lighting: [wattage, cri, beam_angle, color_temperature]
+  Appliances: [capacity, power, warranty]

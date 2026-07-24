@@ -35,12 +35,12 @@
   <main class="container">
     <section class="hero-section">
       <h2 class="hero-title">Smart Semantic Product Search</h2>
-      <p class="hero-subtitle">Enter natural query, constraints, or feature intent (e.g. price limits, features, categories)</p>
+      <p class="hero-subtitle">Natural language vector query &amp; re-ranking search</p>
 
       <div class="search-box-container">
         <form id="search-form" onsubmit="event.preventDefault(); performSearch();">
           <div class="search-input-wrapper">
-            <svg class="search-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
@@ -74,7 +74,7 @@
         <div class="preset-chips">
           <span class="preset-chip-label">Quick Queries:</span>
           <button class="chip-btn" onclick="setQuery('ceiling fans below 5000')">ceiling fans below 5000</button>
-          <button class="chip-btn" onclick="setQuery('high speed BLDC ceiling fan')">high speed BLDC ceiling fan</button>
+          <button class="chip-btn" onclick="setQuery('high speed BLDC ceiling fan')">high speed BLDC fan</button>
           <button class="chip-btn" onclick="setQuery('underlight fan')">underlight fan</button>
           <button class="chip-btn" onclick="setQuery('decorative fan under 4000')">decorative fan under 4000</button>
         </div>
