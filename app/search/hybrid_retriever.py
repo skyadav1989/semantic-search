@@ -5,6 +5,9 @@ Runs Semantic Search, BM25 Search, or both depending on runtime flags.
 """
 
 from __future__ import annotations
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class HybridRetriever:
@@ -31,6 +34,21 @@ class HybridRetriever:
     ):
         semantic = []
         bm25 = []
+
+
+        logger.info("=" * 60)
+
+        if enable_semantic:
+            logger.info("Semantic Retriever : RUNNING")
+        else:
+            logger.info("Semantic Retriever : SKIPPED")
+
+        if enable_bm25:
+            logger.info("BM25 Retriever     : RUNNING")
+        else:
+            logger.info("BM25 Retriever     : SKIPPED")
+
+        logger.info("=" * 60)
 
         if enable_semantic and self.semantic_retriever is not None:
             semantic = self.semantic_retriever.retrieve(

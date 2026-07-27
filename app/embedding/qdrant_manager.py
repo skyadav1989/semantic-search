@@ -14,17 +14,26 @@ class QdrantCollectionManager:
 
     def __init__(
         self,
-        url="http://localhost:6333",
+        url=None,
         api_key=None,
+        timeout=5,
     ):
         if QdrantClient is None:
             raise ImportError(
                 "Please install qdrant-client"
             )
 
+        if url is None or api_key is None:
+            from app.config import get_settings
+
+            settings = get_settings()
+            url = url or settings.qdrant_url
+            api_key = api_key if api_key is not None else settings.QDRANT_API_KEY
+
         self.client = QdrantClient(
             url=url,
             api_key=api_key,
+            timeout=timeout,
         )
 
     def exists(self, collection):

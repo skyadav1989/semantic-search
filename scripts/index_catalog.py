@@ -1,7 +1,13 @@
 import argparse
 import re
+import sys
 from pathlib import Path
 
+ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
+from app.config import get_settings
 from app.catalog.loader import CatalogLoader
 from app.cli.progress import ProgressReporter
 from app.intelligence.attribute_extractor import AttributeExtractor
@@ -45,6 +51,7 @@ def try_import_pipeline(args):
         from app.embedding.bge_m3_embedder import BGEM3Embedder
 
         engine["embedding"] = BGEM3Embedder(
+            model_name=args.embedding_model,
             device=args.device,
         )
 
@@ -55,14 +62,17 @@ def try_import_pipeline(args):
 
         from app.embedding.vector_writer import VectorWriter
 
-        client = QdrantClient(url="http://localhost:6333")
+        client = QdrantClient(
+            url=args.qdrant_url,
+            api_key=args.qdrant_api_key,
+        )
 
         engine["writer"] = VectorWriter(
             client=client,
             collection_name=args.collection,
         )
 
-        print("✓ Indexing pipeline initialized")
+        print("Indexing pipeline initialized")
 
     except Exception as e:
         print(f"[PIPELINE] {e}")
@@ -74,8 +84,8 @@ def parse_price(value):
     """
     Convert:
 
-        ₹ 16 060
-        ₹ 4 800.00
+        INR 16 060
+        INR 4 800.00
         4800
 
     into float.
@@ -101,15 +111,20 @@ def parse_price(value):
 
 
 def main():
+    settings = get_settings()
+
     parser = argparse.ArgumentParser(
         description="Semantic Engine Catalog Indexer"
     )
 
     parser.add_argument("--input", required=True)
     parser.add_argument("--knowledge", default="knowledge/v1")
-    parser.add_argument("--collection", default="products")
+    parser.add_argument("--collection", default=settings.QDRANT_COLLECTION)
+    parser.add_argument("--qdrant-url", default=settings.qdrant_url)
+    parser.add_argument("--qdrant-api-key", default=settings.QDRANT_API_KEY)
+    parser.add_argument("--embedding-model", default=settings.EMBEDDING_MODEL)
     parser.add_argument("--batch-size", type=int, default=64)
-    parser.add_argument("--device", default="cpu")
+    parser.add_argument("--device", default=settings.EMBEDDING_DEVICE)
     parser.add_argument("--dry-run", action="store_true")
 
     args = parser.parse_args()

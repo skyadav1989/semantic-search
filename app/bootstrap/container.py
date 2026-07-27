@@ -22,6 +22,7 @@ from app.search.query_processor import QueryProcessor
 from app.search.reranker import CrossEncoderReranker
 from app.search.rrf import ReciprocalRankFusion
 from app.services.search_service import SearchService
+from config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -104,6 +105,18 @@ class Container:
         if self.enable_business_ranking:
             self.business_ranker = BusinessRanker(self.registry)
 
+
+        logger.info("=" * 70)
+        logger.info("Search Engine Configuration")
+        logger.info("SEARCH_MODE              : %s", self.settings.SEARCH_MODE)
+        logger.info("ENABLE_SEMANTIC          : %s", self.settings.ENABLE_SEMANTIC)
+        logger.info("ENABLE_BM25             : %s", self.settings.ENABLE_BM25)
+        logger.info("ENABLE_RRF              : %s", self.settings.ENABLE_RRF)
+        logger.info("ENABLE_QUERY_EXPANSION  : %s", self.settings.ENABLE_QUERY_EXPANSION)
+        logger.info("ENABLE_RERANKER         : %s", self.settings.ENABLE_RERANKER)
+        logger.info("ENABLE_BUSINESS_RANKING : %s", self.settings.ENABLE_BUSINESS_RANKING)
+        logger.info("=" * 70)
+
         self.search_service = SearchService(
             query_processor=self.query_processor,
             query_expander=self.query_expander,
@@ -121,15 +134,10 @@ class Container:
             enable_business_ranking=self.enable_business_ranking,
         )
 
-        logger.info(
-            "Semantic Engine Ready (mode=%s, semantic=%s, bm25=%s, rrf=%s, reranker=%s, business=%s)",
-            self.search_mode,
-            self.enable_semantic,
-            self.enable_bm25,
-            self.enable_rrf,
-            self.enable_reranker,
-            self.enable_business_ranking,
-        )
+
+
+
+        
 
 
 container = Container()

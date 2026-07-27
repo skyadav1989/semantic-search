@@ -67,7 +67,18 @@ class SearchService:
         semantic_limit = max(final_limit, self.settings.SEMANTIC_LIMIT)
         bm25_limit = max(final_limit, self.settings.BM25_LIMIT)
 
-        logger.info("Search query: %s", query)
+        logger.info("=" * 80)
+        logger.info("Search Query : %s", query)
+        logger.info("Search Mode  : %s", self.settings.SEARCH_MODE)
+
+        logger.info("Feature Flags")
+        logger.info("  Semantic Search    : %s", "ENABLED" if self.enable_semantic else "DISABLED")
+        logger.info("  BM25 Search        : %s", "ENABLED" if self.enable_bm25 else "DISABLED")
+        logger.info("  RRF Fusion         : %s", "ENABLED" if self.enable_rrf else "DISABLED")
+        logger.info("  Query Expansion    : %s", "ENABLED" if self.enable_query_expansion else "DISABLED")
+        logger.info("  Cross Encoder      : %s", "ENABLED" if self.reranker else "DISABLED")
+        logger.info("  Business Ranking   : %s", "ENABLED" if self.enable_business_ranking else "DISABLED")
+        logger.info("=" * 80)
 
         #
         # Query Processing
