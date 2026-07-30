@@ -131,6 +131,76 @@
     </section>
   </main>
 
-  <script src="/static/app.js?v=2"></script>
+  <!-- Product Details Page (PDP) Overlay Modal -->
+  <div id="pdp-modal" class="pdp-modal-overlay" style="display: none;" onclick="handleModalBackdropClick(event)">
+    <div class="pdp-modal-container">
+      <div class="pdp-modal-header">
+        <div class="pdp-header-title">
+          <span class="pdp-badge">PDP</span>
+          <h2>Product Details &amp; Intelligence</h2>
+        </div>
+        <button class="pdp-close-btn" onclick="closePDP()" aria-label="Close details">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="pdp-modal-body">
+        <!-- Main Product Summary Header Card -->
+        <div id="pdp-product-content" class="pdp-main-card">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <!-- Recommendations Sections -->
+        <div class="pdp-recommendations-wrapper">
+          <!-- Similar Products -->
+          <section class="rec-section">
+            <div class="rec-header">
+              <div class="rec-title-group">
+                <span class="rec-icon">⚡</span>
+                <h3>Similar Products</h3>
+                <span class="rec-subtitle">Vector embedding similarity</span>
+              </div>
+            </div>
+            <div id="rec-similar-grid" class="rec-grid">
+              <!-- Rendered dynamically -->
+            </div>
+          </section>
+
+          <!-- Trending Products -->
+          <section class="rec-section">
+            <div class="rec-header">
+              <div class="rec-title-group">
+                <span class="rec-icon">🔥</span>
+                <h3>Trending Products</h3>
+                <span class="rec-subtitle">Popular &amp; high engagement items</span>
+              </div>
+            </div>
+            <div id="rec-trending-grid" class="rec-grid">
+              <!-- Rendered dynamically -->
+            </div>
+          </section>
+
+          <!-- Complementary Products -->
+          <section class="rec-section">
+            <div class="rec-header">
+              <div class="rec-title-group">
+                <span class="rec-icon">✨</span>
+                <h3>Complementary Products</h3>
+                <span class="rec-subtitle">Frequently paired &amp; matching items</span>
+              </div>
+            </div>
+            <div id="rec-complementary-grid" class="rec-grid">
+              <!-- Rendered dynamically -->
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js?v=3"></script>
 </body>
 </html>

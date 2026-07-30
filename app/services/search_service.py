@@ -6,6 +6,7 @@ Application service responsible for executing the configured product search work
 from __future__ import annotations
 from jinja2 import filters
 import logging
+from app.facets.facet_service import FacetService
 import time
 from typing import Any
 
@@ -24,6 +25,7 @@ class SearchService:
         rrf,
         reranker,
         business_ranker,
+        facet_service: FacetService | None = None,  
         settings,
         enable_semantic: bool,
         enable_bm25: bool,
@@ -39,6 +41,7 @@ class SearchService:
         self.rrf = rrf
         self.reranker = reranker
         self.business_ranker = business_ranker
+        self.facet_service = facet_service
         self.settings = settings
         self.enable_semantic = enable_semantic
         self.enable_bm25 = enable_bm25
@@ -78,6 +81,12 @@ class SearchService:
         logger.info("  Query Expansion    : %s", "ENABLED" if self.enable_query_expansion else "DISABLED")
         logger.info("  Cross Encoder      : %s", "ENABLED" if self.reranker else "DISABLED")
         logger.info("  Business Ranking   : %s", "ENABLED" if self.enable_business_ranking else "DISABLED")
+        logger.info(
+            "  Facet Engine       : %s",
+            "ENABLED"
+            if getattr(self.settings, "ENABLE_FACETS", False)
+            else "DISABLED",
+        )
         logger.info("=" * 80)
 
         #
@@ -224,6 +233,31 @@ class SearchService:
 
             results = candidates[:final_limit]
 
+        #
+        # Generate Facets
+        #
+        facets = {}
+
+        if (
+            getattr(self.settings, "ENABLE_FACETS", False)
+            and self.facet_service is not None
+        ):
+
+            try:
+
+                facets = self.facet_service.generate(results)
+
+                logger.info(
+                    "Facet Engine Generated : %d groups",
+                    len(facets),
+                )
+
+            except Exception:
+
+                logger.exception(
+                    "Facet generation failed"
+                )
+
         elapsed = round(
             (time.perf_counter() - started) * 1000,
             2,
@@ -259,6 +293,7 @@ class SearchService:
             "count": len(results),
 
             "elapsed_ms": elapsed,
+            "facets": facets,
 
             "results": results,
         }

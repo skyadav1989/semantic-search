@@ -22,6 +22,12 @@ from app.search.query_processor import QueryProcessor
 from app.search.reranker import CrossEncoderReranker
 from app.search.rrf import ReciprocalRankFusion
 from app.services.search_service import SearchService
+from app.facets.facet_service import FacetService
+from app.recommendation.query_builder import RecommendationQueryBuilder
+from app.recommendation.business_rules import BusinessRuleEngine
+from app.recommendation.strategy import RecommendationStrategy
+from app.recommendation.similarity import SimilarityEngine
+from app.recommendation.recommendation_service import RecommendationService
 from config import settings
 
 logger = logging.getLogger(__name__)
@@ -104,6 +110,32 @@ class Container:
         self.business_ranker = None
         if self.enable_business_ranking:
             self.business_ranker = BusinessRanker(self.registry)
+        
+        #
+        self.facet_service = None
+        if getattr(self.settings, "ENABLE_FACETS", True):
+            self.facet_service = FacetService()
+
+
+        #
+        # Recommendation Engine
+        #
+        self.recommendation_query_builder = RecommendationQueryBuilder()
+
+        self.recommendation_business_rules = BusinessRuleEngine()
+
+        self.recommendation_strategy = RecommendationStrategy()
+
+        self.recommendation_similarity = SimilarityEngine()
+
+        self.recommendation_service = RecommendationService(
+            retriever=self.retriever,
+            filter_builder=self.filter_builder,
+            query_builder=self.recommendation_query_builder,
+            business_rules=self.recommendation_business_rules,
+            strategy=self.recommendation_strategy,
+            similarity=self.recommendation_similarity,
+        )
 
 
         logger.info("=" * 70)
@@ -115,6 +147,14 @@ class Container:
         logger.info("ENABLE_QUERY_EXPANSION  : %s", self.settings.ENABLE_QUERY_EXPANSION)
         logger.info("ENABLE_RERANKER         : %s", self.settings.ENABLE_RERANKER)
         logger.info("ENABLE_BUSINESS_RANKING : %s", self.settings.ENABLE_BUSINESS_RANKING)
+        logger.info(
+            "ENABLE_FACETS           : %s",
+            getattr(self.settings, "ENABLE_FACETS", True),
+        )
+
+        logger.info(
+            "RECOMMENDATION_ENGINE   : ENABLED"
+        )
         logger.info("=" * 70)
 
         self.search_service = SearchService(
@@ -126,6 +166,7 @@ class Container:
             rrf=self.rrf,
             reranker=self.reranker,
             business_ranker=self.business_ranker,
+            facet_service=self.facet_service,
             settings=self.settings,
             enable_semantic=self.enable_semantic,
             enable_bm25=self.enable_bm25,

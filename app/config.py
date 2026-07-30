@@ -1,3 +1,4 @@
+from jinja2 import environment
 from functools import lru_cache
 import os
 from pathlib import Path
@@ -47,6 +48,15 @@ class Settings(BaseModel):
     QDRANT_PORT: int = 6333
     QDRANT_GRPC_PORT: int = 6334
     QDRANT_COLLECTION: str = "products"
+
+    ENABLE_FACETS = True
+
+    FACET_LIMIT = 10
+
+    ENABLE_FACETS: bool = True
+
+    FACET_LIMIT: int = 10
+
 
     @property
     def qdrant_url(self) -> str:
