@@ -57,6 +57,23 @@ class Settings(BaseModel):
 
     FACET_LIMIT: int = 10
 
+    #
+    # LLM
+    #
+    LLM_PROVIDER: str = "gemini"
+
+    LLM_MODEL: str = "gemini-2.5-flash"
+
+    GEMINI_API_KEY: str = ""
+
+    OPENAI_API_KEY: str = ""
+
+    OLLAMA_BASE_URL: str = "http://localhost:11434"
+
+    ENABLE_LLM: bool = True
+
+    MAX_CONTEXT_PRODUCTS: int = 10
+
 
     @property
     def qdrant_url(self) -> str:

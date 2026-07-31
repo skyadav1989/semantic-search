@@ -88,7 +88,7 @@ class AttributeExtractor:
                 break
 
         #
-        # Category
+        # Category / Subcategory
         #
 
         categories = self.categories.get(
@@ -98,15 +98,38 @@ class AttributeExtractor:
 
         for parent, children in categories.items():
 
-            if parent.lower() in query:
+            parent_lower = parent.lower()
+
+            if parent_lower in query:
 
                 attributes["category"] = parent
 
             for child in children:
 
-                if child.lower() in query:
+                child_lower = child.lower()
 
+                #
+                # Exact match
+                #
+                if child_lower in query:
+
+                    attributes["category"] = parent
                     attributes["subcategory"] = child
+                    break
+
+                #
+                # Singular/plural match
+                #
+                child_tokens = child_lower.replace("-", " ").split()
+
+                if all(
+                    token.rstrip("s") in query
+                    for token in child_tokens
+                ):
+
+                    attributes["category"] = parent
+                    attributes["subcategory"] = child
+                    break
 
         #
         # Generic value mappings

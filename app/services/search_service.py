@@ -25,7 +25,8 @@ class SearchService:
         rrf,
         reranker,
         business_ranker,
-        facet_service: FacetService | None = None,  
+        facet_service: FacetService | None = None,
+        answer_generator: Any | None = None,
         settings,
         enable_semantic: bool,
         enable_bm25: bool,
@@ -42,6 +43,7 @@ class SearchService:
         self.reranker = reranker
         self.business_ranker = business_ranker
         self.facet_service = facet_service
+        self.answer_generator = answer_generator
         self.settings = settings
         self.enable_semantic = enable_semantic
         self.enable_bm25 = enable_bm25
@@ -332,3 +334,36 @@ class SearchService:
             ),
             reverse=True,
         )[:top_k]
+
+    # ------------------------------------------------------------
+
+    def chat(
+        self,
+        query: str,
+        limit: int = 10,
+    ):
+        """
+        AI Shopping Assistant
+        """
+
+        if self.answer_generator is None:
+            raise RuntimeError(
+                "LLM module is not configured."
+            )
+
+        #
+        # First perform semantic search
+        #
+        search_response = self.search(
+            query=query,
+            limit=limit,
+        )
+
+        #
+        # Generate grounded answer
+        #
+        return self.answer_generator.answer(
+            query=query,
+            search_results=search_response["results"],
+            prompt_type="search",
+        )

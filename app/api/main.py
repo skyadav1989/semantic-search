@@ -4,7 +4,7 @@ import logging
 import os
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi import FastAPI, HTTPException, Query, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -273,6 +273,44 @@ def get_pdp_data(
 
     except Exception as exc:
         logger.exception(exc)
+        raise HTTPException(
+            status_code=500,
+            detail=str(exc),
+        )
+
+@app.post("/chat")
+def chat(
+    body: dict = Body(...),
+):
+    """
+    AI Shopping Assistant
+    """
+
+    try:
+
+        query = body.get("query")
+
+        if not query:
+
+            raise HTTPException(
+                status_code=400,
+                detail="query is required",
+            )
+
+        limit = body.get("limit", 10)
+
+        return container.search_service.chat(
+            query=query,
+            limit=limit,
+        )
+
+    except HTTPException:
+        raise
+
+    except Exception as exc:
+
+        logger.exception(exc)
+
         raise HTTPException(
             status_code=500,
             detail=str(exc),

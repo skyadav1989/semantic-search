@@ -3,9 +3,11 @@ Application Dependency Container
 
 Creates singleton instances used by the API.
 """
-from __future__ import annotations
 
+from __future__ import annotations
+from huggingface_hub.inference._generated.types import zero_shot_image_classification
 import logging
+import google.generativeai as genai
 from pathlib import Path
 
 from app.config import get_settings
@@ -28,7 +30,11 @@ from app.recommendation.business_rules import BusinessRuleEngine
 from app.recommendation.strategy import RecommendationStrategy
 from app.recommendation.similarity import SimilarityEngine
 from app.recommendation.recommendation_service import RecommendationService
-from config import settings
+from app.llm.context_builder import ContextBuilder
+from app.llm.citations import CitationBuilder
+from app.llm.response_formatter import ResponseFormatter
+from app.llm.answer_generator import AnswerGenerator
+
 
 logger = logging.getLogger(__name__)
 
@@ -111,12 +117,53 @@ class Container:
         if self.enable_business_ranking:
             self.business_ranker = BusinessRanker(self.registry)
         
-        #
+
+        # LLM Components
+        self.context_builder = ContextBuilder()
+
+        self.citation_builder = CitationBuilder()
+
+        self.response_formatter = ResponseFormatter()
+
+        
+        
         self.facet_service = None
         if getattr(self.settings, "ENABLE_FACETS", True):
             self.facet_service = FacetService()
 
+        #
+        # LLM
+        #
+        self.llm_client = None
+        self.answer_generator = None
 
+        if self.settings.ENABLE_LLM:
+
+            if self.settings.LLM_PROVIDER.lower() == "gemini":
+
+                print('KEY '+self.settings.GEMINI_API_KEY)
+
+                genai.configure(
+                    api_key=self.settings.GEMINI_API_KEY,
+                )
+
+                model = genai.GenerativeModel(
+                    self.settings.LLM_MODEL,
+                )
+
+                from app.llm.llm_client import GeminiClient
+
+                self.llm_client = GeminiClient(model)
+
+                self.answer_generator = AnswerGenerator(
+                    llm_client=self.llm_client,
+                    context_builder=self.context_builder,
+                )
+
+                logger.info(
+                    "Gemini initialized (%s)",
+                    self.settings.LLM_MODEL,
+                )
         #
         # Recommendation Engine
         #
@@ -155,6 +202,20 @@ class Container:
         logger.info(
             "RECOMMENDATION_ENGINE   : ENABLED"
         )
+        logger.info(
+            "ENABLE_LLM              : %s",
+            getattr(self.settings, "ENABLE_LLM", False),
+        )
+
+        logger.info(
+            "LLM Provider : %s",
+            self.settings.LLM_PROVIDER,
+        )
+
+        logger.info(
+            "LLM Model : %s",
+            self.settings.LLM_MODEL,
+        )
         logger.info("=" * 70)
 
         self.search_service = SearchService(
@@ -167,6 +228,7 @@ class Container:
             reranker=self.reranker,
             business_ranker=self.business_ranker,
             facet_service=self.facet_service,
+            answer_generator=self.answer_generator,
             settings=self.settings,
             enable_semantic=self.enable_semantic,
             enable_bm25=self.enable_bm25,
