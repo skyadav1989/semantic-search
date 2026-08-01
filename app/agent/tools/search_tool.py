@@ -1,29 +1,84 @@
 ﻿"""
-Search tool.
+Search Tool
+
+Delegates product search to the SearchService.
 """
 
 from __future__ import annotations
 
-from app.agent.models import AgentContext, ToolResult, ToolType
-from .utils import products_from_results
+import logging
+
+from app.agent.models import ExecutionContext
+
+logger = logging.getLogger(__name__)
 
 
 class SearchTool:
-    name = ToolType.SEARCH
+    """
+    Product search tool.
+    """
 
-    def __init__(self, search_service):
+    def __init__(
+        self,
+        *,
+        search_service,
+    ):
         self.search_service = search_service
 
-    def run(self, context: AgentContext, tool_input: dict) -> ToolResult:
-        query = tool_input.get("query") or context.request.query
-        limit = int(tool_input.get("limit") or context.request.limit)
-        data = self.search_service.search(query=query, limit=limit)
-        products = products_from_results(data.get("results", []))
-        context.memory.last_query = query
-        context.memory.last_intent = context.memory.last_intent
-        return ToolResult(
-            tool=self.name,
-            success=True,
-            data=data,
-            products=products,
+    # ---------------------------------------------------------
+
+    def execute(
+        self,
+        *,
+        context: ExecutionContext,
+        query: str,
+        limit: int = 10,
+        **_,
+    ) -> dict:
+        """
+        Execute product search.
+        """
+
+        logger.info(
+            "Search Tool: %s",
+            query,
         )
+
+        #
+        # Conversation filters
+        #
+
+        filters = context.memory.variables.get(
+            "filters",
+            {},
+        )
+
+        #
+        # Existing SearchService
+        #
+
+        try:
+            result = self.search_service.search(
+                query=query,
+                limit=limit,
+                filters=filters,
+            )
+        except TypeError:
+            #
+            # Existing SearchService may not yet support filters.
+            #
+            result = self.search_service.search(
+                query=query,
+                limit=limit,
+            )
+
+        #
+        # Save products for later planner steps
+        #
+
+        context.memory.products = result.get(
+            "products",
+            [],
+        )
+
+        return result

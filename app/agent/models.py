@@ -23,6 +23,13 @@ class AgentStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
+class AgentIntent(str, Enum):
+    PRODUCT_SEARCH = "product_search"
+    RECOMMENDATION = "recommendation"
+    CATALOG_LOOKUP = "catalog_lookup"
+    FAQ = "faq"
+    CHAT = "chat"
+    CLARIFICATION = "clarification"
 
 class ToolType(str, Enum):
     SEARCH = "search"
@@ -55,7 +62,7 @@ class AgentMemory(BaseModel):
 
     rewritten_query: str = ""
 
-    intent: str = ""
+    intent: AgentIntent | None = None
 
     filters: dict[str, Any] = Field(default_factory=dict)
 
@@ -129,6 +136,12 @@ class AgentPlan(BaseModel):
 
     goal: str
 
+    intent: AgentIntent
+
+    requires_clarification: bool = False
+
+    clarification_question: str | None = None
+
     steps: list[PlanStep] = Field(
         default_factory=list,
     )
@@ -137,10 +150,9 @@ class AgentPlan(BaseModel):
         default_factory=dict,
     )
 
-
 class PlannerResult(BaseModel):
 
-    intent: str
+    intent: AgentIntent
 
     confidence: float = 1.0
 
@@ -152,6 +164,8 @@ class PlannerResult(BaseModel):
 # ==========================================================
 
 class AgentResponse(BaseModel):
+
+    session_id: str = ""
 
     answer: str
 

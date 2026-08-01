@@ -1,33 +1,69 @@
 ﻿"""
-Agent tool helpers.
+Search Tool
+
+Delegates product search to the SearchService.
 """
 
 from __future__ import annotations
 
-from typing import Any
+import logging
 
-from app.agent.models import ProductSummary
+from app.agent.models import ExecutionContext
 
-
-def product_from_payload(payload: dict[str, Any]) -> ProductSummary:
-    return ProductSummary(
-        sku=str(payload.get("sku") or ""),
-        title=str(payload.get("title") or payload.get("name") or ""),
-        category=payload.get("category"),
-        subcategory=payload.get("subcategory"),
-        brand=payload.get("brand"),
-        price=payload.get("price"),
-        mrp=payload.get("mrp"),
-        stock_status=payload.get("stock_status"),
-        url=payload.get("url") or payload.get("product_url"),
-        image=payload.get("image") or payload.get("image_url"),
-        attributes=payload.get("attributes") or {},
-    )
+logger = logging.getLogger(__name__)
 
 
-def products_from_results(results: list[dict]) -> list[ProductSummary]:
-    products = []
-    for item in results:
-        payload = item.get("payload", {})
-        products.append(product_from_payload(payload))
-    return products
+class SearchTool:
+
+    def __init__(
+        self,
+        *,
+        search_service,
+    ):
+        self.search_service = search_service
+
+    # ---------------------------------------------------------
+
+    def execute(
+        self,
+        *,
+        context: ExecutionContext,
+        query: str,
+        limit: int = 10,
+        **_,
+    ) -> dict:
+
+        logger.info(
+            "Search Tool: %s",
+            query,
+        )
+
+        #
+        # Retrieve conversational filters
+        #
+
+        filters = context.memory.variables.get(
+            "filters",
+            {},
+        )
+
+        #
+        # Call your existing SearchService
+        #
+
+        result = self.search_service.search(
+            query=query,
+            limit=limit,
+            filters=filters,
+        )
+
+        #
+        # Store products for later tools
+        #
+
+        context.memory.products = result.get(
+            "products",
+            [],
+        )
+
+        return result

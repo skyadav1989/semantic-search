@@ -1,7 +1,12 @@
 ﻿"""
-Shopping Planner
+Shopping Agent Planner
 
-Creates a deterministic execution plan for the Shopping Agent.
+Responsible for:
+
+- Intent Detection
+- Follow-up Detection
+- Multi-step Planning
+- Clarification
 """
 
 from __future__ import annotations
@@ -10,8 +15,9 @@ import logging
 import re
 
 from .models import (
-    AgentPlan,
     ExecutionContext,
+    AgentIntent,
+    AgentPlan,
     PlanStep,
     PlannerResult,
     ToolType,
@@ -21,35 +27,9 @@ logger = logging.getLogger(__name__)
 
 
 class AgentPlanner:
-    """
-    Rule-based planner.
 
-    Decides which tool(s) should execute.
-    """
-
-    FAQ_PATTERN = re.compile(
-        r"\b("
-        r"what|why|how|difference|compare|"
-        r"warranty|return|returns|delivery|shipping|"
-        r"installation|install|emi|payment|"
-        r"rpm|bldc|sweep|air delivery|"
-        r"power consumption|electricity"
-        r")\b",
-        re.I,
-    )
-
-    RECOMMEND_PATTERN = re.compile(
-        r"\b("
-        r"recommend|suggest|similar|alternative|"
-        r"compatible|bundle|matching"
-        r")\b",
-        re.I,
-    )
-
-    SKU_PATTERN = re.compile(
-        r"\b[A-Z0-9][A-Z0-9-]{5,}\b",
-        re.I,
-    )
+    def __init__(self):
+        pass
 
     # ---------------------------------------------------------
 
@@ -60,146 +40,215 @@ class AgentPlanner:
         query: str,
         limit: int = 10,
     ) -> PlannerResult:
-        """
-        Build execution plan.
-        """
-
-        query = query.strip()
 
         logger.info(
             "Planning query: %s",
             query,
         )
 
-        #
-        # Save intent later
-        #
+        query_lower = query.lower()
 
         #
-        # SKU Lookup
+        # Determine intent
         #
 
-        sku = self._extract_sku(query)
+        intent = self._detect_intent(query_lower)
 
-        if sku:
+        #
+        # Build execution plan
+        #
 
-            return PlannerResult(
-                intent="catalog",
-                confidence=0.99,
-                plan=AgentPlan(
-                    goal=query,
-                    steps=[
-                        PlanStep(
-                            id=1,
-                            tool=ToolType.CATALOG,
-                            description="Load product by SKU",
-                            input={
-                                "sku": sku,
-                            },
-                            reasoning="SKU detected",
-                        )
-                    ],
-                    metadata={
-                        "reason": "catalog_lookup",
+        plan = AgentPlan(
+            goal=query,
+            intent=intent,
+            metadata={
+                "reason": intent.value,
+            },
+        )
+
+        #
+        # Product Comparison
+        #
+
+        if intent == AgentIntent.RECOMMENDATION:
+
+            plan.steps.append(
+
+                PlanStep(
+                    id=1,
+                    tool=ToolType.RECOMMENDATION,
+                    description="Generate recommendations",
+                    reasoning="Recommendation detected",
+                    input={
+                        "query": query,
+                        "limit": limit,
                     },
-                ),
+                )
+
             )
 
         #
         # FAQ
         #
 
-        if self.FAQ_PATTERN.search(query):
+        elif intent == AgentIntent.FAQ:
 
-            return PlannerResult(
-                intent="faq",
-                confidence=0.95,
-                plan=AgentPlan(
-                    goal=query,
-                    steps=[
-                        PlanStep(
-                            id=1,
-                            tool=ToolType.FAQ,
-                            description="Answer FAQ",
-                            input={
-                                "query": query,
-                                "limit": limit,
-                            },
-                            reasoning="FAQ detected",
-                        )
-                    ],
-                    metadata={
-                        "reason": "faq",
+            plan.steps.append(
+
+                PlanStep(
+                    id=1,
+                    tool=ToolType.FAQ,
+                    description="Answer FAQ",
+                    reasoning="FAQ detected",
+                    input={
+                        "query": query,
+                        "limit": limit,
                     },
-                ),
+                )
+
             )
+
+        #
+        # Product Search
+        #
+
+        else:
+
+            plan.steps.append(
+
+                PlanStep(
+                    id=1,
+                    tool=ToolType.SEARCH,
+                    description="Search products",
+                    reasoning="Search detected",
+                    input={
+                        "query": query,
+                        "limit": limit,
+                    },
+                )
+
+            )
+
+        #
+        # Follow-up detection
+        #
+
+        if self._is_followup(query_lower):
+
+            plan.metadata["followup"] = True
+
+        return PlannerResult(
+            intent=intent,
+            confidence=1.0,
+            plan=plan,
+        )
+
+    # ---------------------------------------------------------
+
+    def _detect_intent(
+        self,
+        query: str,
+    ) -> AgentIntent:
 
         #
         # Recommendation
         #
 
-        if self.RECOMMEND_PATTERN.search(query):
+        if any(
 
-            return PlannerResult(
-                intent="recommendation",
-                confidence=0.90,
-                plan=AgentPlan(
-                    goal=query,
-                    steps=[
-                        PlanStep(
-                            id=1,
-                            tool=ToolType.RECOMMENDATION,
-                            description="Generate recommendations",
-                            input={
-                                "query": query,
-                                "limit": limit,
-                            },
-                            reasoning="Recommendation request",
-                        )
-                    ],
-                    metadata={
-                        "reason": "recommendation",
-                    },
-                ),
-            )
+            word in query
+
+            for word in [
+
+                "best",
+
+                "recommend",
+
+                "suggest",
+
+                "top",
+
+            ]
+
+        ):
+
+            return AgentIntent.RECOMMENDATION
 
         #
-        # Default Search
+        # FAQ
         #
 
-        return PlannerResult(
-            intent="search",
-            confidence=0.85,
-            plan=AgentPlan(
-                goal=query,
-                steps=[
-                    PlanStep(
-                        id=1,
-                        tool=ToolType.SEARCH,
-                        description="Search products",
-                        input={
-                            "query": query,
-                            "limit": limit,
-                        },
-                        reasoning="Default search",
-                    )
-                ],
-                metadata={
-                    "reason": "search",
-                },
-            ),
-        )
+        if any(
+
+            word in query
+
+            for word in [
+
+                "what",
+
+                "why",
+
+                "how",
+
+                "difference",
+
+                "explain",
+
+                "meaning",
+
+            ]
+
+        ):
+
+            return AgentIntent.FAQ
+
+        #
+        # Search
+        #
+
+        return AgentIntent.PRODUCT_SEARCH
 
     # ---------------------------------------------------------
 
-    def _extract_sku(
+    def _is_followup(
         self,
         query: str,
-    ) -> str | None:
+    ) -> bool:
 
-        match = self.SKU_PATTERN.search(query)
+        return any(
 
-        if not match:
-            return None
+            word in query
 
-        return match.group(0).upper()
+            for word in [
+
+                "only",
+
+                "cheaper",
+
+                "costlier",
+
+                "compare",
+
+                "remove",
+
+                "exclude",
+
+                "instead",
+
+                "first",
+
+                "second",
+
+                "third",
+
+                "it",
+
+                "them",
+
+                "this",
+
+                "that",
+
+            ]
+
+        )

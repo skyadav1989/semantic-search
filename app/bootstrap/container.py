@@ -48,6 +48,8 @@ from app.agent.tools.faq_retriever import FAQRetriever
 from app.agent.tools.faq_ranker import FAQRanker
 from app.agent.tools.faq_formatter import FAQFormatter
 
+from app.agent.tools.search_tool import SearchTool
+
 from app.agent.tool_registry import ToolRegistry
 from app.agent.models import ToolType
 from app.agent.tool_executor import ToolExecutor
@@ -57,8 +59,11 @@ from app.agent.response_parser import AgentResponseParser
 from app.agent.context import AgentContext
 from app.agent.agent import ShoppingAgent
 
+from app.agent.session_store import SessionStore
+from app.agent.state_manager import StateManager
+from app.agent.conversation import ConversationResolver
 
-
+from app.agent.filter_merger import FilterMerger
 
 
 
@@ -129,6 +134,8 @@ class Container:
         self.query_processor = QueryProcessor(self.registry)
         self.query_expander = QueryExpander(self.registry)
         self.filter_builder = MetadataFilterBuilder()
+
+        self.filter_merger = FilterMerger()
 
         self.retriever = None
         if self.enable_semantic:
@@ -283,6 +290,10 @@ class Container:
         )
 
 
+        self.search_tool = SearchTool(
+            search_service=self.search_service,
+        )
+
         #
         # FAQ Components
         #
@@ -306,6 +317,10 @@ class Container:
         self.tool_registry = ToolRegistry()
 
         self.tool_registry.register(
+            ToolType.SEARCH,
+            self.search_tool,
+        )
+        self.tool_registry.register(
             ToolType.FAQ,
             self.faq_tool,
         )
@@ -328,14 +343,31 @@ class Container:
             registry=self.tool_registry,
             context_manager=self.agent_context,
         )
+
+        # ---------------------------------------------------------
+        # Conversation Services
+        # ---------------------------------------------------------
+
+        self.session_store = SessionStore()
+
+        self.state_manager = StateManager()
+
+        self.conversation_resolver = ConversationResolver()
+
+        self.filter_merger = FilterMerger()
         
+
         self.shopping_agent = ShoppingAgent(
+            context=self.agent_context,
             planner=self.agent_planner,
             tool_executor=self.tool_executor,
             prompt_builder=self.agent_prompt_builder,
             response_parser=self.agent_response_parser,
-            context=self.agent_context,
             llm_client=self.llm_client,
+            session_store=self.session_store,
+            state_manager=self.state_manager,
+            conversation=self.conversation_resolver,
+            filter_merger=self.filter_merger,
         )
 
         #
@@ -354,6 +386,15 @@ class Container:
 
         self.chat_postprocessor = ResponsePostProcessor()
 
+        #
+        # Conversation Memory
+        #
+
+        self.session_store = SessionStore()
+
+        self.state_manager = StateManager()
+
+        self.conversation_resolver = ConversationResolver()
         
 
         self.chat_service = ChatService(
