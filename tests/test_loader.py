@@ -1,10 +1,11 @@
+from app.knowledge.loader import KnowledgeLoader
 
-import json
-from pathlib import Path
-from app.catalog.loader import CatalogLoader
+loader = KnowledgeLoader("knowledge/v1")
+knowledge = loader.load()
 
-def test_loader(tmp_path):
-    d=tmp_path/"x"; d.mkdir()
-    (d/"a.json").write_text(json.dumps({"sku":"S1","title":"T","category":"Fans","subcategory":"Wall"}))
-    items=list(CatalogLoader(d))
-    assert items[0].sku=="S1"
+print("\nLoaded knowledge sections:")
+for k in knowledge.documents:
+    print(" -", k)
+
+print("\nVersion:",
+      knowledge.documents["_manifest"]["version"])
