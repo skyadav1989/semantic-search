@@ -1,320 +1,135 @@
 # 🚀 Semantic Product Search Engine
 
-An AI-powered Semantic Product Search Engine built using **FastAPI**, **Qdrant**, **BGE-M3**, and **CrossEncoder Reranking**. The engine understands user intent, performs semantic retrieval, applies metadata filters, and returns highly relevant product recommendations.
+An AI-powered product search and shopping assistant built with
+**FastAPI**, **Qdrant**, **BGE-M3**, and **Gemini**.
 
----
+## Features
 
-## ✨ Features
+-   Semantic Search
+-   Hybrid Search (Vector + BM25)
+-   Query Understanding
+-   Metadata Filtering
+-   Faceted Search
+-   Business Ranking
+-   AI Chat (`/chat`)
+-   Shopping Agent (`/agent/chat`)
+-   Knowledge Base (YAML)
+-   FAQ Retrieval
+-   Recommendation Engine
+-   FastAPI REST APIs
 
-### 🔍 Semantic Search
-- BGE-M3 sentence embeddings
-- Semantic similarity search using Qdrant
-- Natural language query support
+## Architecture
 
-### 🧠 Query Understanding
-- Query Normalization
-- Query Expansion
-- Intent Detection
-- Attribute Extraction
-
-### 🎯 Metadata Filtering
-- Price Filter
-- Color Filter
-- Category Filter (Ready)
-- Brand Filter (Ready)
-
-Example:
-
-```
-ceiling fans below 5000
-```
-
-↓
-
-```
-Price <= 5000
-Category = Ceiling Fans
-```
-
----
-
-## 🏆 Intelligent Ranking
-
-Search Results are ranked using multiple stages.
-
-```
-User Query
-      │
-      ▼
-Query Processor
-      │
-      ▼
-Query Expansion
-      │
-      ▼
-Metadata Filters
-      │
-      ▼
-BGE-M3 Embedding
-      │
-      ▼
-Qdrant Vector Search
-      │
-      ▼
-CrossEncoder Reranking
-      │
-      ▼
-Business Ranking
-      │
-      ▼
-Final Results
+``` text
+User
+ │
+ ▼
+FastAPI
+ │
+ ▼
+Search Service
+ │
+ ├── Query Processing
+ ├── Hybrid Retrieval
+ ├── Reranking
+ ├── Business Ranking
+ └── LLM Response
 ```
 
----
+## Agent Flow
 
-## 📦 Product Intelligence
-
-During indexing every product is enriched with
-
-- Keywords
-- Benefits
-- Use Cases
-- Search Document
-- Technical Document
-
-This significantly improves semantic retrieval quality.
-
----
-
-## 📂 Rich Product Indexing
-
-Each indexed product stores
-
-- SKU
-- Product Title
-- Category
-- Subcategory
-- Price
-- MRP
-- Product URL
-- Product Image
-- Brand
-- Stock Status
-- Keywords
-- Benefits
-- Use Cases
-- Search Document
-- Technical Document
-
----
-
-## 🏗 Architecture
-
-```
-                 User
-                  │
-                  ▼
-           FastAPI REST API
-                  │
-                  ▼
-           Search Service
-                  │
-      ┌───────────┴────────────┐
-      │                        │
-Query Processor         Query Expander
-      │                        │
-      └───────────┬────────────┘
-                  │
-         Metadata Filter Builder
-                  │
-                  ▼
-          BGE-M3 Embedder
-                  │
-                  ▼
-          Qdrant Vector DB
-                  │
-                  ▼
-     CrossEncoder Reranker
-                  │
-                  ▼
-        Business Ranker
-                  │
-                  ▼
-            JSON Response
+``` text
+User
+ │
+ ▼
+Planner
+ │
+ ▼
+Tool Executor
+ │
+ ▼
+FAQ / Search / Recommendation
+ │
+ ▼
+Prompt Builder
+ │
+ ▼
+Gemini
+ │
+ ▼
+Response
 ```
 
----
+## Knowledge
 
-## 📁 Project Structure
+Location:
 
+``` text
+app/knowledge/v1/
 ```
+
+Main files: - taxonomy.yaml - synonyms.yaml - technical_specs.yaml -
+feature_benefits.yaml - use_cases.yaml
+
+## APIs
+
+-   `GET /search`
+-   `POST /chat`
+-   `POST /agent/chat`
+
+## Tech Stack
+
+-   Python 3.12+
+-   FastAPI
+-   Qdrant
+-   BGE-M3
+-   Sentence Transformers
+-   CrossEncoder
+-   Gemini
+-   Pydantic
+
+## Project Structure
+
+``` text
 app/
-│
+├── agent/
 ├── api/
 ├── bootstrap/
-├── catalog/
-├── cli/
 ├── embedding/
-├── intelligence/
+├── facets/
 ├── knowledge/
+├── llm/
+├── recommendation/
 ├── search/
-├── services/
-│
-scripts/
-knowledge/
-config/
-data/
-tests/
+└── services/
 ```
 
----
+## Completed
 
-## ⚙️ Technology Stack
+-   Semantic Search
+-   Hybrid Search
+-   BM25 + RRF
+-   CrossEncoder Reranking
+-   Business Ranking
+-   Recommendation Engine
+-   Faceted Search
+-   Knowledge Registry
+-   FAQ Tool
+-   AI Chat
+-   Shopping Agent Framework
 
-- Python 3.12+
-- FastAPI
-- Qdrant
-- BGE-M3 Embeddings
-- Sentence Transformers
-- CrossEncoder
-- Pydantic
-- Uvicorn
+## Next
 
----
+-   Multi-step Reasoning
+-   Conversation Memory
+-   Catalog Tool
+-   Search Tool
+-   Recommendation Tool
+-   Semantic Knowledge Search
+-   Explain Recommendations
+-   Evaluation Framework
+-   Analytics Dashboard
 
-## 🔍 Search Workflow
+## License
 
-```
-User Query
-      │
-      ▼
-Normalize Query
-      │
-      ▼
-Extract Attributes
-      │
-      ▼
-Expand Query
-      │
-      ▼
-Generate Embedding
-      │
-      ▼
-Search Qdrant
-      │
-      ▼
-Rerank Results
-      │
-      ▼
-Business Ranking
-      │
-      ▼
-Return Products
-```
-
----
-
-## 📦 Indexing Workflow
-
-```
-Raw Product JSON
-        │
-        ▼
-Catalog Loader
-        │
-        ▼
-Knowledge Registry
-        │
-        ▼
-Product Intelligence Pipeline
-        │
-        ▼
-Generate Search Document
-        │
-        ▼
-Generate Embeddings
-        │
-        ▼
-Store into Qdrant
-```
-
----
-
-## 🌐 REST API
-
-### Search
-
-```
-GET /search?q=wall fans
-```
-
-Example
-
-```
-GET /search?q=ceiling fans below 5000
-```
-
-Returns
-
-- Semantic Match
-- Product Image
-- Product URL
-- Price
-- Discount
-- Stock Status
-
----
-
-## 📈 Current Capabilities
-
-✅ Semantic Search
-
-✅ AI Query Expansion
-
-✅ Query Normalization
-
-✅ Intent Detection
-
-✅ Price Filtering
-
-✅ Color Filtering
-
-✅ Metadata Search
-
-✅ CrossEncoder Reranking
-
-✅ Business Ranking
-
-✅ Rich Product Payload
-
-✅ Product Intelligence
-
-✅ FastAPI REST API
-
-✅ Qdrant Vector Search
-
----
-
-## 🚀 Future Roadmap
-
-- Hybrid Search (BM25 + Vector)
-- Brand Detection
-- Feature Detection
-- Recommendation Engine
-- AI Shopping Assistant
-- Search Suggestions
-- Faceted Search
-- Next.js Modern UI
-- Search Analytics Dashboard
-
----
-
-## 🤝 Contributing
-
-Contributions, feature requests and pull requests are welcome.
-
----
-
-## 📄 License
-
-MIT License
+MIT
