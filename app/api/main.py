@@ -4,12 +4,13 @@ import logging
 import os
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Query, Body
+from fastapi import FastAPI, HTTPException, Query, Body, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 from fastapi import Path as ApiPath
+from app.chat.models import ChatRequest
 
 from app.bootstrap.container import container
 
@@ -47,6 +48,17 @@ def root():
         "version": "1.0.0",
         "status": "running",
     }
+
+
+@app.get("/chatui")
+def chat_ui():
+    chat_file = STATIC_DIR / "chatui.html"
+    if chat_file.exists():
+        return FileResponse(str(chat_file))
+    raise HTTPException(
+        status_code=404,
+        detail="chatui.html not found",
+    )
 
 
 @app.get("/health")
@@ -316,3 +328,49 @@ def chat(
             detail=str(exc),
         )
 
+
+
+
+@app.post("/chat/v2")
+def chat_v2(
+    request: ChatRequest,
+):
+    """
+    Conversational Shopping Assistant
+    """
+
+    try:
+
+        return container.chat_service.chat(
+            request,
+        )
+
+    except HTTPException:
+        raise
+
+    except Exception as exc:
+
+        logger.exception(exc)
+
+        raise HTTPException(
+            status_code=500,
+            detail=str(exc),
+        )
+
+@app.get("/chat/v2/session/{session_id}")
+def chat_session(session_id: str):
+
+    return container.chat_service.session(
+        session_id,
+    )
+
+@app.delete("/chat/v2/session/{session_id}")
+def clear_chat(session_id: str):
+
+    container.chat_service.clear(
+        session_id,
+    )
+
+    return {
+        "success": True,
+    }

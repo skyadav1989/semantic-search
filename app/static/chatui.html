@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Semantic Engine - Shopping Chat</title>
+  <meta name="description" content="Conversational shopping assistant for Semantic Engine">
+  <link rel="stylesheet" href="/static/chatui.css?v=1">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Go to search home">
+      <span class="brand-mark" aria-hidden="true">SE</span>
+      <span>
+        <strong>SemanticEngine</strong>
+        <small>Shopping assistant</small>
+      </span>
+    </a>
+    <div class="session-controls">
+      <label for="session-id">Session</label>
+      <input id="session-id" type="text" value="abc123" autocomplete="off">
+      <button id="new-session-btn" type="button" title="Start a new session" aria-label="Start a new session">New</button>
+      <button id="clear-session-btn" type="button" title="Clear this session" aria-label="Clear this session">Clear</button>
+    </div>
+  </header>
+
+  <main class="chat-shell">
+    <section class="conversation-panel" aria-label="Chat conversation">
+      <div id="messages" class="messages" aria-live="polite"></div>
+
+      <div id="followups" class="followups" aria-label="Suggested follow-up questions"></div>
+
+      <form id="chat-form" class="composer">
+        <input id="chat-input" type="text" placeholder="Ask for products, budgets, features, brands..." value="under 500" autocomplete="off" required>
+        <button id="send-btn" type="submit" aria-label="Send message">
+          <span>Send</span>
+        </button>
+      </form>
+    </section>
+
+    <aside class="results-panel" aria-label="Chat results">
+      <section class="context-block">
+        <div class="panel-heading">
+          <h2>Results</h2>
+          <span id="product-count">0 products</span>
+        </div>
+        <div id="filters" class="filters"></div>
+      </section>
+
+      <section>
+        <div id="products" class="product-list"></div>
+      </section>
+    </aside>
+  </main>
+
+  <script src="/static/chatui.js?v=1"></script>
+</body>
+</html>

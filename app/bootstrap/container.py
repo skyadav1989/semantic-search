@@ -34,7 +34,13 @@ from app.llm.context_builder import ContextBuilder
 from app.llm.citations import CitationBuilder
 from app.llm.response_formatter import ResponseFormatter
 from app.llm.answer_generator import AnswerGenerator
-
+from app.chat.memory import ConversationMemory
+from app.chat.conversation import ConversationManager
+from app.chat.followup_detector import FollowupDetector
+from app.chat.context_manager import ContextManager
+from app.chat.prompt_builder import PromptBuilder
+from app.chat.chat_service import ChatService
+from app.chat.response_postprocessor import ResponsePostProcessor
 
 logger = logging.getLogger(__name__)
 
@@ -183,6 +189,7 @@ class Container:
             strategy=self.recommendation_strategy,
             similarity=self.recommendation_similarity,
         )
+        
 
 
         logger.info("=" * 70)
@@ -235,6 +242,34 @@ class Container:
             enable_rrf=self.enable_rrf,
             enable_query_expansion=self.enable_query_expansion,
             enable_business_ranking=self.enable_business_ranking,
+        )
+
+
+        #
+        # Chat Components
+        #
+
+        self.chat_memory = ConversationMemory()
+
+        self.chat_conversation = ConversationManager()
+
+        self.chat_followup = FollowupDetector()
+
+        self.chat_context = ContextManager()
+
+        self.chat_prompt_builder = PromptBuilder()
+
+        self.chat_postprocessor = ResponsePostProcessor()
+
+        self.chat_service = ChatService(
+            memory=self.chat_memory,
+            conversation=self.chat_conversation,
+            followup_detector=self.chat_followup,
+            context_manager=self.chat_context,
+            prompt_builder=self.chat_prompt_builder,
+            response_postprocessor=self.chat_postprocessor,
+            search_service=self.search_service,
+            answer_generator=self.answer_generator,
         )
 
 
