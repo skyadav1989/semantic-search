@@ -1,4 +1,4 @@
-"""
+﻿"""
 Chat Service
 
 Enterprise conversational shopping assistant.
@@ -6,26 +6,26 @@ Enterprise conversational shopping assistant.
 Flow
 
 User Query
-      │
-      ▼
+      |
+      v
 Conversation Memory
-      │
-      ▼
+      |
+      v
 Follow-up Detection
-      │
-      ▼
+      |
+      v
 Search
-      │
-      ▼
+      |
+      v
 Context Update
-      │
-      ▼
+      |
+      v
 LLM
-      │
-      ▼
+      |
+      v
 Conversation Update
-      │
-      ▼
+      |
+      v
 Response
 """
 
@@ -68,9 +68,8 @@ class ChatService:
         self.context_manager = context_manager
 
         self.prompt_builder = prompt_builder
-        
-        self.response_postprocessor = response_postprocessor
 
+        self.response_postprocessor = response_postprocessor
 
         self.search_service = search_service
 
@@ -83,10 +82,6 @@ class ChatService:
         request: ChatRequest,
     ) -> ChatResponse:
 
-        #
-        # Load Session
-        #
-
         state = self.memory.get(
             request.session_id,
         )
@@ -97,24 +92,13 @@ class ChatService:
             )
         )
 
-        #
-        # Detect Follow-up
-        #
-
         if self.followup_detector.is_followup(
-
             query=request.query,
-
             previous_query=previous_query,
-
         ):
-
             effective_query = self.followup_detector.merge(
-
                 previous_query=previous_query,
-
                 current_query=request.query,
-
             )
 
             logger.info(
@@ -122,126 +106,60 @@ class ChatService:
             )
 
         else:
-
             effective_query = request.query
 
-        #
-        # Save User Message
-        #
-
         self.conversation.add_user_message(
-
             state,
-
             effective_query,
-
         )
-
-        #
-        # Search
-        #
 
         search_response = self.search_service.search(
-
             query=effective_query,
-
             limit=request.limit,
-
         )
-
-        #
-        # Convert Products
-        #
 
         products = []
 
         for item in search_response["results"]:
-
             payload = item["payload"]
 
             products.append(
-
                 ProductReference(
-
                     sku=payload.get("sku", ""),
-
                     title=payload.get("title", ""),
-
                     category=payload.get("category"),
-
                     subcategory=payload.get("subcategory"),
-
                     brand=payload.get("brand"),
-
                     price=payload.get("price"),
-
                     url=payload.get("url"),
-
                     image=payload.get("image"),
-
                 )
-
             )
 
-        #
-        # Update Context
-        #
-
         self.context_manager.update(
-
             context=state.conversation.search_context,
-
             query=effective_query,
-
             normalized_query=search_response["normalized_query"],
-
             filters=search_response["filters"],
-
             attributes=search_response["attributes"],
-
             intent=search_response["intent"],
-
             products=products,
-
         )
-
-        #
-        # History
-        #
 
         history = self.conversation.formatted_history(
             state,
         )
 
-        #
-        # LLM
-        #
-
         answer = self.answer_generator.answer(
-
             query=effective_query,
-
             search_results=search_response["results"],
-
             history=history,
-
         )
-
-        #
-        # Save Assistant Response
-        #
 
         self.conversation.add_assistant_message(
-
             state,
-
             answer.answer,
-
         )
-
-        #
-        # Save Session
-        #
 
         self.memory.save(
             state,
@@ -274,7 +192,6 @@ class ChatService:
         self,
         session_id: str,
     ):
-
         self.memory.delete(
             session_id,
         )
@@ -285,17 +202,14 @@ class ChatService:
         self,
         session_id: str,
     ):
-
         state = self.memory.get(
             session_id,
         )
 
         return {
-
             "messages": self.conversation.message_count(
                 state,
             ),
-
             "context": self.context_manager.summary(
                 state.conversation.search_context,
             ),

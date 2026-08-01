@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import logging
 import os
@@ -12,7 +12,10 @@ from pathlib import Path
 from fastapi import Path as ApiPath
 from app.chat.models import ChatRequest
 
+
 from app.bootstrap.container import container
+from app.agent.models import AgentRequest
+
 
 logging.basicConfig(level=logging.INFO)
 
@@ -374,3 +377,9 @@ def clear_chat(session_id: str):
     return {
         "success": True,
     }
+
+@app.post("/agent/chat")
+def agent_chat(
+    request: AgentRequest,
+):
+    return container.shopping_agent.chat(request)

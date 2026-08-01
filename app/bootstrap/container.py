@@ -5,7 +5,7 @@ Creates singleton instances used by the API.
 """
 
 from __future__ import annotations
-from huggingface_hub.inference._generated.types import zero_shot_image_classification
+#from huggingface_hub.inference._generated.types import zero_shot_image_classification
 import logging
 import google.generativeai as genai
 from pathlib import Path
@@ -41,6 +41,27 @@ from app.chat.context_manager import ContextManager
 from app.chat.prompt_builder import PromptBuilder
 from app.chat.chat_service import ChatService
 from app.chat.response_postprocessor import ResponsePostProcessor
+from app.knowledge.knowledge_search_service import KnowledgeSearchService
+
+from app.agent.tools.faq_tool import FAQTool
+from app.agent.tools.faq_retriever import FAQRetriever
+from app.agent.tools.faq_ranker import FAQRanker
+from app.agent.tools.faq_formatter import FAQFormatter
+
+from app.agent.tool_registry import ToolRegistry
+from app.agent.models import ToolType
+from app.agent.tool_executor import ToolExecutor
+from app.agent.planner import AgentPlanner
+from app.agent.prompt_builder import AgentPromptBuilder
+from app.agent.response_parser import AgentResponseParser
+from app.agent.context import AgentContext
+from app.agent.agent import ShoppingAgent
+
+
+
+
+
+
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +108,24 @@ class Container:
                 device=self.embedding_device,
             )
 
-        self.registry = KnowledgeRegistry("knowledge/v1")
+        
+
+        knowledge_path = (
+            Path(__file__).resolve().parent.parent
+            / "knowledge"
+            / "v1"
+        )
+
+        self.registry = KnowledgeRegistry(
+            str(knowledge_path),
+        )
+        
+        #
+        # Knowledge Search Service
+        #
+        self.knowledge_search = KnowledgeSearchService(
+            registry=self.registry,
+        )
         self.query_processor = QueryProcessor(self.registry)
         self.query_expander = QueryExpander(self.registry)
         self.filter_builder = MetadataFilterBuilder()
@@ -246,6 +284,61 @@ class Container:
 
 
         #
+        # FAQ Components
+        #
+
+        self.faq_retriever = FAQRetriever(
+            knowledge_search=self.knowledge_search,
+        )
+
+        self.faq_ranker = FAQRanker()
+
+        self.faq_formatter = FAQFormatter()
+
+        self.faq_tool = FAQTool(
+            retriever=self.faq_retriever,
+            ranker=self.faq_ranker,
+            formatter=self.faq_formatter,
+        )
+
+      
+
+        self.tool_registry = ToolRegistry()
+
+        self.tool_registry.register(
+            ToolType.FAQ,
+            self.faq_tool,
+        )
+
+        
+
+        self.agent_planner = AgentPlanner()
+
+        
+
+        self.agent_prompt_builder = AgentPromptBuilder()
+        
+
+        self.agent_response_parser = AgentResponseParser()
+
+        
+        self.agent_context = AgentContext()
+
+        self.tool_executor = ToolExecutor(
+            registry=self.tool_registry,
+            context_manager=self.agent_context,
+        )
+        
+        self.shopping_agent = ShoppingAgent(
+            planner=self.agent_planner,
+            tool_executor=self.tool_executor,
+            prompt_builder=self.agent_prompt_builder,
+            response_parser=self.agent_response_parser,
+            context=self.agent_context,
+            llm_client=self.llm_client,
+        )
+
+        #
         # Chat Components
         #
 
@@ -260,6 +353,8 @@ class Container:
         self.chat_prompt_builder = PromptBuilder()
 
         self.chat_postprocessor = ResponsePostProcessor()
+
+        
 
         self.chat_service = ChatService(
             memory=self.chat_memory,

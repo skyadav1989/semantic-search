@@ -1,4 +1,4 @@
-"""
+﻿"""
 Chat Models
 
 Shared models used by the conversational shopping assistant.

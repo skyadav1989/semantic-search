@@ -27,3 +27,6 @@ Lighting:
     family: Downlight
     department: Lighting
     product_type: Downlight
+motor_technology:
+  - BLDC
+  - Induction Motor

@@ -1,0 +1,33 @@
+Power Consumption:
+  field: power_watts
+  unit: W
+
+Rated Voltage:
+  field: voltage_v
+  unit: V
+
+Sweep Size:
+  field: sweep_size_mm
+  unit: mm
+
+Air Delivery:
+  field: air_delivery_m3_min
+  unit: m3/min
+
+Rated Speed:
+  field: rpm
+  unit: rpm
+
+Weight:
+  field: weight_kg
+  unit: kg
+BLDC:
+  full_form: Brushless Direct Current Motor
+
+  definition: A Brushless Direct Current (BLDC) motor is an electronically commutated motor that uses permanent magnets instead of carbon brushes.
+
+  benefits:
+    - Energy efficient
+    - Silent operation
+    - Longer lifespan
+    - Lower maintenance
